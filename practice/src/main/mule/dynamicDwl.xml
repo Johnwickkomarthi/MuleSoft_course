@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:file="http://www.mulesoft.org/schema/mule/file"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/file http://www.mulesoft.org/schema/mule/file/current/mule-file.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<http:listener-config name="HTTP_Listener_config" doc:name="HTTP Listener config" >
+		<http:listener-connection host="0.0.0.0" port="8081" />
+	</http:listener-config>
+	<file:config name="File_Config" doc:name="File Config" >
+		<file:connection workingDir="/Users/ktroller/AnypointStudio/studio-workspace/dynamicevaluate/src/main/resources" />
+	</file:config>
+	<file:config name="File_Config1" doc:name="File Config" doc:id="7ce9a1bc-8e13-4c12-b931-3e32702e0117" >
+		<file:connection workingDir="C:\TGH_OFFLINE\temp\New folder\practice\src\main\resources" />
+	</file:config>
+	<flow name="dynamicevaluateFlow" >
+		<http:listener doc:name="Listener" config-ref="HTTP_Listener_config" path="/test"/>
+		<set-payload value='#[readUrl("classpath://data.json","application/json")]' doc:name="Set Payload" doc:id="f68c02bf-e7b4-4b5c-aa45-eba22569c001" />
+		<file:read doc:name="Read" doc:id="ccb46505-201d-4256-99ed-3c1d0430e5d3" config-ref="File_Config1" path='#["dw-" ++ attributes.queryParams.data ++ ".dwl"]' target="dwlScriptVar"/>
+		<ee:dynamic-evaluate doc:name="Dynamic Evaluate" expression='#[vars."dwlScriptVar"]'>
+		</ee:dynamic-evaluate>
+		<logger level="INFO" doc:name="Logger" message="#[payload]"/>
+	</flow>
+	<flow name="dynamicevaluateFlow1" doc:id="61a39d53-67e5-485a-9a23-619fbac2fd32" >
+		<http:listener doc:name="Listener" doc:id="0aec0264-31cd-4745-9ff1-3ace905db0d4" config-ref="HTTP_Listener_config" path="/test2" />
+		<set-payload value='#[readUrl("classpath://data.json","application/json")]' doc:name="Set Payload" doc:id="d43d2ea8-d376-472a-a5ce-a54bc0a635eb" />
+		<ee:transform doc:name="Transform Message" doc:id="1272de41-f4c6-4c35-b995-3cb18e35e0f7" >
+			<ee:message >
+				<ee:set-payload resource="dw-ao.dwl" />
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="Logger" doc:id="c4d4ea93-afb4-47d2-bbf1-3d7ad4f46938" message="#[payload]" />
+	</flow>
+
+</mule>
